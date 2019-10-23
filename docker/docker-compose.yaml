@@ -1,0 +1,20 @@
+version: '3.6'
+services:
+  database:
+    image: mongo:latest
+    restart: always
+    environment:
+      # replace these with your own values OR
+      # set them as ENV variables OR
+      # define them inside a .env file,
+      # the .env file does not work with `docker stack deploy`
+      MONGO_INITDB_ROOT_USERNAME: ${DB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${DB_PASS}
+      MONGO_INITDB_DATABASE: ${DB_DATA}
+    ports:
+      - '2700:27017'
+    volumes:
+      # default data location
+      - mongo:/data/db
+volumes:
+  mongo:
