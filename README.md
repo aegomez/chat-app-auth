@@ -48,9 +48,7 @@ When running the server with the `pnpm run dev` script, the variables are looked
 
 ### Authentication
 
-[Passport](http://www.passportjs.org/) is used for the backend authentication. Check `src/auth/` if you want to replace it or for further configuration.
-
-For now the [jwt strategy](http://www.passportjs.org/packages/passport-jwt/) is being used, but this may change in the future.
+After the user has succesfully registered and signed it, they receive a [JSON Web Token](https://github.com/auth0/node-jsonwebtoken), that can be used as authentication mechanism to gain access to some of the app's protected data.
 
 ### Database
 
@@ -72,7 +70,7 @@ Running a simple `express` server. May change it in the future.
 ### Security
 
 - `bcryptjs` to hash data
-- `validator` for server side validation
+- `express-validator` for server side validation
 
 ### ESLint
 
