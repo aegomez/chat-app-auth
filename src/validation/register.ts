@@ -66,7 +66,7 @@ const passwordRules = body('password')
 const password2Rules = body('password2')
   .exists()
   .withMessage(m.password2.required)
-  .custom((value, { req }) => value !== req.body.password)
+  .custom((value, { req }) => value === req.body.password)
   .withMessage(m.password2.isMatch);
 
 /**

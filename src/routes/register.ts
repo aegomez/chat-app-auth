@@ -33,7 +33,13 @@ router
       newUser.password = hash;
       const result = await newUser.save();
 
-      return res.json(result);
+      if (result) {
+        return res.json({
+          success: true
+        });
+      } else {
+        throw Error('Could not save to database');
+      }
     } catch (error) {
       return res.status(500).json({
         errors: 'Registration service is unavailable.'

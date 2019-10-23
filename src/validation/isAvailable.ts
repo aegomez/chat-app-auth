@@ -1,6 +1,8 @@
 import { body, ValidationChain } from 'express-validator';
 import { findOne } from '../db';
 
+/* Custom messages, to be replaced with i18n */
+
 const messages = {
   name: 'Username is not available.',
   email: 'Email is already registered.'
@@ -12,7 +14,7 @@ const checkIfAvailable = async (
 ): Promise<void> => {
   const result = await findOne(key, value + '');
   if (result !== null) {
-    Promise.reject(messages[key]);
+    return Promise.reject(messages[key]);
   }
 };
 
@@ -24,6 +26,6 @@ const checkIfAvailable = async (
  * Must be invoked as a function.
  */
 export const createAvailabilityValidation = (): ValidationChain[] => [
-  body('name').custom(value => checkIfAvailable('name', value)),
-  body('email').custom(value => checkIfAvailable('email', value))
+  body('name').custom(async value => checkIfAvailable('name', value)),
+  body('email').custom(async value => checkIfAvailable('email', value))
 ];
