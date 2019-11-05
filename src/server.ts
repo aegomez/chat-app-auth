@@ -1,9 +1,11 @@
 import express from 'express';
 import compression from 'compression';
 import morgan from 'morgan';
+import graphqlHTTP from 'express-graphql';
 
 import { connect } from './db';
-import { registerRouter, loginRouter } from './routes';
+// import { registerRouter, loginRouter } from './routes';
+import { authSchema } from './graphql';
 
 const PORT = process.env.PORT || 2000;
 
@@ -22,8 +24,18 @@ connect()
     // errors.dbConnectionFailed = 'Service is unavailable';
   });
 
-// Routes
-app.use('/api/users', registerRouter);
-app.use('/api/users', loginRouter);
+app.use(
+  '/q',
+  graphqlHTTP({
+    schema: authSchema,
+    graphiql: process.env.NODE_ENV === 'development'
+  })
+);
 
-app.listen(PORT, () => `Server up and ruuning on port ${PORT}`);
+// Routes
+// app.use('/api/users', registerRouter);
+// app.use('/api/users', loginRouter);
+
+app.listen(PORT, () => {
+  console.log(`Server up and running on port ${PORT}.`);
+});
