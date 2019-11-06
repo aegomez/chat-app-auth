@@ -5,5 +5,5 @@
  */
 export function isUsername(value: string): boolean {
   if (typeof value !== 'string') return false;
-  return /^[a-z0-9]+[\w\-_]+[a-z0-9]+$/.test(value);
+  return /^[A-Za-z0-9]+[\w\-_]+[A-Za-z0-9]+$/.test(value);
 }

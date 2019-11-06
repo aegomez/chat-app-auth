@@ -4,7 +4,6 @@ import morgan from 'morgan';
 import graphqlHTTP from 'express-graphql';
 
 import { connect } from './db';
-// import { registerRouter, loginRouter } from './routes';
 import { authSchema } from './graphql';
 
 const PORT = process.env.PORT || 2000;
@@ -21,7 +20,6 @@ connect()
   .then(() => console.log('Succesfully connected to DB.'))
   .catch(error => {
     console.error('Could not connect to database', error);
-    // errors.dbConnectionFailed = 'Service is unavailable';
   });
 
 app.use(
@@ -31,10 +29,6 @@ app.use(
     graphiql: process.env.NODE_ENV === 'development'
   })
 );
-
-// Routes
-// app.use('/api/users', registerRouter);
-// app.use('/api/users', loginRouter);
 
 app.listen(PORT, () => {
   console.log(`Server up and running on port ${PORT}.`);
