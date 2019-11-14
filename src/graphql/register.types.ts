@@ -1,8 +1,8 @@
-import { GraphQLInputObjectType, GraphQLObjectType } from 'graphql';
+import { GraphQLObjectType } from 'graphql';
 
 import { gqlBoolean, gqlString, RegisterTypes } from './scalars';
 
-function getRegisterFields(): RegisterTypes {
+export function getRegisterFields(): RegisterTypes {
   return {
     name: gqlString,
     email: gqlString,
@@ -11,16 +11,12 @@ function getRegisterFields(): RegisterTypes {
   };
 }
 
-export const registerUserType = new GraphQLInputObjectType({
-  name: 'RegisterUser',
-  description: 'Data required to register an user.',
-  fields: getRegisterFields
-});
-
 export const registerResultType = new GraphQLObjectType({
   name: 'RegisterUserMutationResult',
+  description: 'The result of the register action. Returns an errors object if not successful.',
   fields: () => ({
     success: gqlBoolean,
+    id: gqlString,
     errors: {
       type: new GraphQLObjectType({
         name: 'RegisterUserErrors',

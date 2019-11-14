@@ -14,8 +14,7 @@ import { findOne } from '../db';
 /* Custom messages, to be replaced with i18n */
 const m = {
   login: {
-    notFound: 'User not found.',
-    password: 'Incorrect password.',
+    incorrect: 'Incorrect user or password.',
     service: 'Login service is unavailable.'
   },
   register: {
@@ -29,20 +28,21 @@ const secretOrKey = process.env.JWT_SECRET;
 
 /**
  * Map properties from a dictionary `D` to the
- * `args.input` parameter of the resolver function
- * and replace its return type for a custom object.
+ * `args` parameter of the resolver function and
+ * replace its return type for a custom object.
  */
 type CustomResolver<D> = (
-  ...args: Parameters<GraphQLFieldResolver<{}, {}, { input: D }>>
+  ...args: Parameters<GraphQLFieldResolver<{}, {}, D>>
 ) => Promise<{
   success: boolean;
   errors: Partial<D>;
+  id?: string;
   token?: string;
 }>;
 
 export const loginResolver: CustomResolver<LoginUserProps> = async (
   _source,
-  { input }
+  input
 ) => {
   const { isValid, isName, errors } = validateLoginInput(input);
 
@@ -64,7 +64,7 @@ export const loginResolver: CustomResolver<LoginUserProps> = async (
     if (!user) {
       return {
         success: false,
-        errors: { nameOrEmail: m.login.notFound }
+        errors: { nameOrEmail: m.login.incorrect }
       };
     }
 
@@ -73,14 +73,13 @@ export const loginResolver: CustomResolver<LoginUserProps> = async (
     if (!isMatch) {
       return {
         success: false,
-        errors: { password: m.login.password }
+        errors: { nameOrEmail: m.login.incorrect }
       };
     }
 
     // Create JWT payload
     const payload = {
-      id: user.id,
-      name: user.name
+      id: user.id
     };
     // Sign token
     const token = jwt.sign(payload, secretOrKey as string, {
@@ -90,6 +89,7 @@ export const loginResolver: CustomResolver<LoginUserProps> = async (
     // Return token to client
     return {
       success: true,
+      id: user.id,
       token: 'Bearer ' + token,
       errors: {}
     };
@@ -103,7 +103,7 @@ export const loginResolver: CustomResolver<LoginUserProps> = async (
 
 export const registerResolver: CustomResolver<RegisterUserProps> = async (
   _source,
-  { input }
+  input
 ) => {
   const { isValid, errors } = validateRegisterInput(input);
 
@@ -151,6 +151,7 @@ export const registerResolver: CustomResolver<RegisterUserProps> = async (
     if (result) {
       return {
         success: true,
+        id: result.id,
         errors: {}
       };
     } else {
