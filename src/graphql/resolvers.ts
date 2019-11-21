@@ -2,6 +2,7 @@ import { GraphQLFieldResolver } from 'graphql';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { normalizeEmail } from 'validator';
+import { Response } from 'express';
 
 import {
   validateLoginInput,
@@ -32,17 +33,17 @@ const secretOrKey = process.env.JWT_SECRET;
  * replace its return type for a custom object.
  */
 type CustomResolver<D> = (
-  ...args: Parameters<GraphQLFieldResolver<{}, {}, D>>
+  ...args: Parameters<GraphQLFieldResolver<{}, { response: Response }, D>>
 ) => Promise<{
   success: boolean;
   errors: Partial<D>;
   id?: string;
-  token?: string;
 }>;
 
 export const loginResolver: CustomResolver<LoginUserProps> = async (
   _source,
-  input
+  input,
+  context
 ) => {
   const { isValid, isName, errors } = validateLoginInput(input);
 
@@ -86,11 +87,17 @@ export const loginResolver: CustomResolver<LoginUserProps> = async (
       expiresIn: '1d',
       issuer: 'accounts.chat.app'
     });
+
+    // Tell the client to set a cookie
+    context.response.cookie('token', 'Bearer ' + token, {
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60 * 24
+    });
+
     // Return token to client
     return {
       success: true,
       id: user.id,
-      token: 'Bearer ' + token,
       errors: {}
     };
   } catch (error) {

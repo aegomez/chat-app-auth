@@ -11,11 +11,11 @@ export function getLoginFields(): LoginTypes {
 
 export const loginResultType = new GraphQLObjectType({
   name: 'LoginUserMutationResult',
-  description: 'The result of the login action. Returns a token if successful or an errors object if not.',
+  description:
+    'The result of the login action. Returns a token if successful or an errors object if not.',
   fields: () => ({
     success: gqlBoolean,
     id: gqlString,
-    token: gqlString,
     errors: {
       type: new GraphQLObjectType({
         name: 'LoginUserErrors',

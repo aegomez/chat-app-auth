@@ -24,10 +24,11 @@ connect()
 
 app.use(
   '/q',
-  graphqlHTTP({
+  graphqlHTTP((_request, response) => ({
     schema: authSchema,
-    graphiql: process.env.NODE_ENV === 'development'
-  })
+    graphiql: process.env.NODE_ENV === 'development',
+    context: { response }
+  }))
 );
 
 app.listen(PORT, () => {
