@@ -48,7 +48,7 @@ export function validateLoginInput(
   // and has the correct length.
   if (isEmpty(password)) {
     errors.password = m.password.required;
-  } else if (!isLength(nameOrEmail, { min: 6, max: 99 })) {
+  } else if (!isLength(password, { min: 6, max: 99 })) {
     errors.nameOrEmail = m.nameOrEmail.incorrect;
   }
 
