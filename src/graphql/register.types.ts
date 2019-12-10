@@ -13,7 +13,8 @@ export function getRegisterFields(): RegisterTypes {
 
 export const registerResultType = new GraphQLObjectType({
   name: 'RegisterUserMutationResult',
-  description: 'The result of the register action. Returns an errors object if not successful.',
+  description:
+    'The result of the register action. Returns an errors object if not successful.',
   fields: () => ({
     success: gqlBoolean,
     id: gqlString,

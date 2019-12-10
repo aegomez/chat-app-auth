@@ -9,8 +9,13 @@ import {
   validateRegisterInput,
   checkIfAvailable
 } from '../validation';
-import { User, LoginUserProps, RegisterUserProps } from '../models';
-import { findOne } from '../db';
+import {
+  User,
+  LoginUserProps,
+  RegisterUserProps,
+  VerifyTokenResult
+} from '../models';
+import { findOne, findById } from '../db';
 
 /* Custom messages, to be replaced with i18n */
 const m = {
@@ -80,24 +85,25 @@ export const loginResolver: CustomResolver<LoginUserProps> = async (
 
     // Create JWT payload
     const payload = {
-      id: user.id
+      chatId: user.id
     };
     // Sign token
     const token = jwt.sign(payload, secretOrKey as string, {
       expiresIn: '1d',
-      issuer: 'accounts.chat.app'
+      issuer: 'accounts.chat.app',
+      subject: 'client@chat.app'
     });
 
-    // Tell the client to set a cookie
+    // Tell the client to set a cookie with the token
     context.response.cookie('token', 'Bearer ' + token, {
       httpOnly: true,
       maxAge: 1000 * 60 * 60 * 24
     });
 
-    // Return token to client
+    // Return some data to the client
     return {
       success: true,
-      id: user.id,
+      id: '',
       errors: {}
     };
   } catch (error) {
@@ -169,6 +175,39 @@ export const registerResolver: CustomResolver<RegisterUserProps> = async (
     return {
       success: false,
       errors: { name: m.register.service }
+    };
+  }
+};
+
+export const verifyTokenResolver: GraphQLFieldResolver<
+  {},
+  {},
+  { token: string }
+> = async (_source, input): Promise<VerifyTokenResult> => {
+  const secretOrKey = process.env.JWT_SECRET || 'clearlywrong';
+  try {
+    // Verify token validity
+    const result = jwt.verify(input.token, secretOrKey, {
+      algorithms: ['HS256'],
+      issuer: 'accounts.chat.app',
+      subject: 'client@chat.app'
+    });
+    if (typeof result === 'string') throw Error('invalid token');
+
+    // If valid, search for the user data
+    const { chatId } = result as { chatId: string };
+    const user = await findById(chatId);
+    if (user === null) throw Error('user in token not found');
+
+    // return the data to requester
+    return {
+      valid: true,
+      _userId: user.id,
+      _userName: user.name
+    };
+  } catch (e) {
+    return {
+      valid: false
     };
   }
 };

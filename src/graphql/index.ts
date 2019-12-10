@@ -1,13 +1,12 @@
 import { GraphQLObjectType, GraphQLSchema } from 'graphql';
 
 import { loginMutation, registerMutation } from './mutations';
-import { gqlString } from './scalars';
+import { verifyTokenQuery } from './queries';
 
 const authQueryRootType = new GraphQLObjectType({
   name: 'AuthQuery',
-  description: 'Not implemented.',
   fields: () => ({
-    any: gqlString
+    verify: verifyTokenQuery
   })
 });
 

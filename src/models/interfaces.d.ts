@@ -9,3 +9,9 @@ export interface RegisterUserProps {
   password: string;
   password2: string;
 }
+
+export interface VerifyTokenResult {
+  valid: boolean;
+  _userId?: string;
+  _userName?: string;
+}

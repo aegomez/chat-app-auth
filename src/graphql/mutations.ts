@@ -4,7 +4,7 @@ import { loginResultType, getLoginFields } from './login.types';
 import { registerResultType, getRegisterFields } from './register.types';
 import { registerResolver, loginResolver } from './resolvers';
 
-type BaseResolver = GraphQLFieldResolver<{}, {}, {}>;
+export type BaseResolver = GraphQLFieldResolver<{}, {}, {}>;
 
 type FieldConfig = GraphQLFieldConfig<{}, {}>;
 
