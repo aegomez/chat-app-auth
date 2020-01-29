@@ -30,7 +30,7 @@ const m = {
   }
 };
 
-const secretOrKey = process.env.JWT_SECRET;
+const secretOrKey = process.env.JWT_SECRET || 'not defined';
 
 /**
  * Map properties from a dictionary `D` to the
@@ -184,7 +184,6 @@ export const verifyTokenResolver: GraphQLFieldResolver<
   {},
   { token: string }
 > = async (_source, input): Promise<VerifyTokenResult> => {
-  const secretOrKey = process.env.JWT_SECRET || 'clearlywrong';
   try {
     // Verify token validity
     const result = jwt.verify(input.token, secretOrKey, {

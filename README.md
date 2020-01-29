@@ -1,38 +1,31 @@
 # chat-app auth
 
-This is the auth service for the chat application. Source written in **TypeScript** (3.6). Runs on **Node.js**.
+This is the auth service for the chat application. Source written in **TypeScript** (3.7). Runs on **Node.js**.
 
 ## npm scripts
-
-This project was originally configured to use [`pnpm`](https://pnpm.js.org/) as package manager. You are free to use `npm`/`yarn` instead, just notice that there are no `package-lock.json` nor `yarn.lock` files provided (yet).
-
-```sh
-# Install pnpm as a global dependency (optional)
-npm install -g pnpm@">=4.0.2"
-```
 
 > IMPORTANT: Some environment variables must be provided before running the application ([read more](#Environment%20variables)).
 
 ```sh
-# Replace for 'npm' or 'yarn' as needed
+# Replace 'yarn' for 'npm' as needed
 
 # Install all dependencies
-pnpm install
+yarn install
 
 # Transpile all .ts files to .js
 # Using tsc, but can be replaced for babel, ...
-pnpm run build
+yarn run build
 
 # Run the server in DEVELOPMENT mode, 
 # (provide an .env file to be used by env-cmd)
-pnpm run dev
+yarn run dev
 
 # Run the server in PRODUCTION mode, 
 # (remember to provide the required env variables)
-pnpm start
+yarn start
 
 # Run test suite (pending...)
-pnpm run test
+yarn run test
 ```
 
 ## Environment variables
