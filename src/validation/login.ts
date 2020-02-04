@@ -9,18 +9,7 @@ interface LoginValidationResult {
   isValid: boolean;
 }
 
-/* Custom messages, to be replaced with i18n */
-const template = (s: string): string => s + ' field is required.';
-
-const m = {
-  nameOrEmail: {
-    required: template('Name/Email'),
-    incorrect: 'Incorrect username or password.'
-  },
-  password: {
-    required: template('Password')
-  }
-};
+/* Complete error messages are replaced in the client. */
 
 export function validateLoginInput(
   data: LoginUserProps
@@ -37,19 +26,21 @@ export function validateLoginInput(
   // and, if name, if it is composed of valid
   // characters only.
   if (isEmpty(nameOrEmail)) {
-    errors.nameOrEmail = m.nameOrEmail.required;
+    errors.nameOrEmail = 'nameOrEmail.required';
   } else if (isEmail(nameOrEmail)) {
     isName = false;
   } else if (!isUsername(nameOrEmail)) {
-    errors.nameOrEmail = m.nameOrEmail.incorrect;
+    errors.nameOrEmail = 'login.incorrect';
+    errors.password = 'login.incorrect';
   }
 
   // Check that the password field is not empty,
   // and has the correct length.
   if (isEmpty(password)) {
-    errors.password = m.password.required;
+    errors.password = 'password.required';
   } else if (!isLength(password, { min: 6, max: 99 })) {
-    errors.nameOrEmail = m.nameOrEmail.incorrect;
+    errors.nameOrEmail = 'nameOrEmail.incorrect';
+    errors.password = 'password.incorrect';
   }
 
   return {

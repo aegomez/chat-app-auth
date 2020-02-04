@@ -8,29 +8,7 @@ interface RegisterValidationResult {
   isValid: boolean;
 }
 
-/* Custom messages, to be replaced with i18n */
-const template = (s: string): string => s + ' field is required.';
-
-const m = {
-  name: {
-    required: template('Username'),
-    length: 'Username must be 1 to 40 characters long.',
-    validChars:
-      'Username may only contain alphanumeric characters, single hyphens or underscores, and cannot begin or end with an hyphen or underscore.'
-  },
-  email: {
-    required: template('Email'),
-    isEmail: 'Email is invalid.'
-  },
-  password: {
-    required: template('Password'),
-    length: 'Password must be 6 to 99 characters long.'
-  },
-  password2: {
-    required: template('Confirm password'),
-    isMatch: 'Passwords must match.'
-  }
-};
+/* Complete error messages are replaced in the client. */
 
 export function validateRegisterInput(
   data: RegisterUserProps
@@ -42,33 +20,33 @@ export function validateRegisterInput(
   // has the correct length, and contains only
   // valid characters.
   if (isEmpty(name)) {
-    errors.name = m.name.required;
+    errors.name = 'name.required';
   } else if (!isLength(name, { min: 1, max: 40 })) {
-    errors.name = m.name.length;
+    errors.name = 'name.length';
   } else if (!isUsername(name)) {
-    errors.name = m.name.validChars;
+    errors.name = 'name.validChars';
   }
 
   // Checks that `email` is not empty and is
   // a valid email string.
   if (isEmpty(email)) {
-    errors.email = m.email.required;
+    errors.email = 'email.required';
   } else if (!isEmail(email)) {
-    errors.email = m.email.isEmail;
+    errors.email = 'email.isEmail';
   }
 
   // Checks that password is defined and has correct length.
   if (isEmpty(password)) {
-    errors.password = m.password.required;
+    errors.password = 'password.required';
   } else if (!isLength(password, { min: 6, max: 99 })) {
-    errors.password = m.password.length;
+    errors.password = 'password.length';
   }
 
   // Checks that `password2` is defined and matches with the other password.
   if (isEmpty(password2)) {
-    errors.password2 = m.password2.required;
+    errors.password2 = 'password2.required';
   } else if (!equals(password, password2)) {
-    errors.password2 = m.password2.isMatch;
+    errors.password2 = 'password2.isMatch';
   }
 
   return {

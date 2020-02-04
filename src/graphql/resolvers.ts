@@ -17,18 +17,7 @@ import {
 } from '../models';
 import { findOne, findById } from '../db';
 
-/* Custom messages, to be replaced with i18n */
-const m = {
-  login: {
-    incorrect: 'Incorrect user or password.',
-    service: 'Login service is unavailable.'
-  },
-  register: {
-    usedName: 'Username is not available.',
-    usedEmail: 'Email is already registered.',
-    service: 'Registration service is unavailable.'
-  }
-};
+/* Complete error messages are now replaced in the client. */
 
 const secretOrKey = process.env.JWT_SECRET || 'not defined';
 
@@ -70,7 +59,10 @@ export const loginResolver: CustomResolver<LoginUserProps> = async (
     if (!user) {
       return {
         success: false,
-        errors: { nameOrEmail: m.login.incorrect }
+        errors: {
+          nameOrEmail: 'login.incorrect',
+          password: 'login.incorrect'
+        }
       };
     }
 
@@ -79,7 +71,10 @@ export const loginResolver: CustomResolver<LoginUserProps> = async (
     if (!isMatch) {
       return {
         success: false,
-        errors: { nameOrEmail: m.login.incorrect }
+        errors: {
+          nameOrEmail: 'login.incorrect',
+          password: 'login.incorrect'
+        }
       };
     }
 
@@ -109,7 +104,10 @@ export const loginResolver: CustomResolver<LoginUserProps> = async (
   } catch (error) {
     return {
       success: false,
-      errors: { nameOrEmail: m.login.service }
+      errors: {
+        nameOrEmail: 'login.service',
+        password: 'login.service'
+      }
     };
   }
 };
@@ -135,7 +133,7 @@ export const registerResolver: CustomResolver<RegisterUserProps> = async (
     if (!nameAvailable) {
       return {
         success: false,
-        errors: { name: m.register.usedName }
+        errors: { name: 'register.usedName' }
       };
     }
 
@@ -144,7 +142,7 @@ export const registerResolver: CustomResolver<RegisterUserProps> = async (
     if (!emailAvailable) {
       return {
         success: false,
-        errors: { email: m.register.usedEmail }
+        errors: { email: 'register.usedEmail' }
       };
     }
 
@@ -174,7 +172,7 @@ export const registerResolver: CustomResolver<RegisterUserProps> = async (
     console.error(error);
     return {
       success: false,
-      errors: { name: m.register.service }
+      errors: { name: 'register.service' }
     };
   }
 };
