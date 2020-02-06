@@ -1,7 +1,8 @@
 import { GraphQLFieldResolver } from 'graphql';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { normalizeEmail } from 'validator';
+import { normalizeEmail, isLength } from 'validator';
+import { parse } from 'cookie';
 import { Response } from 'express';
 
 import {
@@ -13,11 +14,11 @@ import {
   User,
   LoginUserProps,
   RegisterUserProps,
+  PasswordProps,
+  PasswordResult,
   VerifyTokenResult
 } from '../models';
 import { findOne, findById } from '../db';
-
-/* Complete error messages are now replaced in the client. */
 
 const secretOrKey = process.env.JWT_SECRET || 'not defined';
 
@@ -36,10 +37,10 @@ type CustomResolver<D> = (
 
 export const loginResolver: CustomResolver<LoginUserProps> = async (
   _source,
-  input,
+  args,
   context
 ) => {
-  const { isValid, isName, errors } = validateLoginInput(input);
+  const { isValid, isName, errors } = validateLoginInput(args);
 
   // Return if the fields are not valid
   if (!isValid) {
@@ -48,7 +49,7 @@ export const loginResolver: CustomResolver<LoginUserProps> = async (
 
   try {
     const key = isName ? 'name' : 'email';
-    let nameOrEmail = input.nameOrEmail;
+    let nameOrEmail = args.nameOrEmail;
 
     if (!isName) {
       nameOrEmail = normalizeEmail(nameOrEmail) || '';
@@ -67,7 +68,7 @@ export const loginResolver: CustomResolver<LoginUserProps> = async (
     }
 
     // If user exists, check the password
-    const isMatch = await bcrypt.compare(input.password, user.password);
+    const isMatch = await bcrypt.compare(args.password, user.password);
     if (!isMatch) {
       return {
         success: false,
@@ -114,9 +115,9 @@ export const loginResolver: CustomResolver<LoginUserProps> = async (
 
 export const registerResolver: CustomResolver<RegisterUserProps> = async (
   _source,
-  input
+  args
 ) => {
-  const { isValid, errors } = validateRegisterInput(input);
+  const { isValid, errors } = validateRegisterInput(args);
 
   // Return if the fields are not valid
   if (!isValid) {
@@ -125,9 +126,9 @@ export const registerResolver: CustomResolver<RegisterUserProps> = async (
 
   try {
     // Find if username is already registered
-    const { name, password } = input;
+    const { name, password } = args;
     // Should be already validated with isEmail
-    const email = normalizeEmail(input.email) || '';
+    const email = normalizeEmail(args.email) || '';
 
     const nameAvailable = await checkIfAvailable('name', name);
     if (!nameAvailable) {
@@ -177,22 +178,40 @@ export const registerResolver: CustomResolver<RegisterUserProps> = async (
   }
 };
 
+function verifyToken(token: string): Promise<string | null> {
+  return new Promise((resolve, reject) => {
+    jwt.verify(
+      token,
+      secretOrKey,
+      {
+        algorithms: ['HS256'],
+        issuer: 'accounts.chat.app',
+        subject: 'client@chat.app'
+      },
+      (error, decoded) => {
+        if (error) return reject(error);
+        if (typeof decoded === 'string') {
+          resolve(null);
+        } else {
+          const { chatId } = decoded as { chatId: string };
+          resolve(chatId);
+        }
+      }
+    );
+  });
+}
+
 export const verifyTokenResolver: GraphQLFieldResolver<
   {},
   {},
   { token: string }
-> = async (_source, input): Promise<VerifyTokenResult> => {
+> = async (_source, args): Promise<VerifyTokenResult> => {
   try {
     // Verify token validity
-    const result = jwt.verify(input.token, secretOrKey, {
-      algorithms: ['HS256'],
-      issuer: 'accounts.chat.app',
-      subject: 'client@chat.app'
-    });
-    if (typeof result === 'string') throw Error('invalid token');
+    const chatId = await verifyToken(args.token);
+    if (!chatId) throw Error('invalid token');
 
     // If valid, search for the user data
-    const { chatId } = result as { chatId: string };
     const user = await findById(chatId);
     if (user === null) throw Error('user in token not found');
 
@@ -206,5 +225,65 @@ export const verifyTokenResolver: GraphQLFieldResolver<
     return {
       valid: false
     };
+  }
+};
+
+export const updatePasswordResolver: GraphQLFieldResolver<
+  {},
+  { cookie?: string },
+  PasswordProps
+> = async (_source, args, context): Promise<PasswordResult> => {
+  try {
+    const NOT_AUTHORIZED = 'NOT_AUTHORIZED';
+
+    // Validate the new password
+    const { oldPassword, newPassword } = args;
+    if (!oldPassword || !newPassword) {
+      throw Error('password.required');
+    }
+    if (!isLength(newPassword, { min: 6, max: 99 })) {
+      throw Error('password.length');
+    }
+
+    // Old and new passwords must be different
+    if (oldPassword === newPassword) {
+      throw Error('password.unchanged');
+    }
+
+    // Extract the token from the cookie
+    const cookie = parse(context.cookie || '');
+    if (!cookie.token) {
+      throw Error(NOT_AUTHORIZED);
+    }
+
+    // Verify the token's validity
+    const token = cookie.token.replace('Bearer ', '');
+    const chatId = await verifyToken(token);
+    if (!chatId) {
+      throw Error(NOT_AUTHORIZED);
+    }
+
+    // Find the user
+    const user = await findById(chatId);
+    if (!user) {
+      throw Error(NOT_AUTHORIZED);
+    }
+
+    // If the user exists, check the old password
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      throw Error('password.incorrect');
+    }
+
+    // All tests passed: hash and update the new password
+    const salt = await bcrypt.genSalt(10);
+    const hash = await bcrypt.hash(newPassword, salt);
+    user.password = hash;
+    await user.save();
+
+    return { success: true, error: '' };
+  } catch (err) {
+    console.error(err);
+    return { success: false, error: err.message };
   }
 };

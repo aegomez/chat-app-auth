@@ -15,3 +15,13 @@ export interface VerifyTokenResult {
   _userId?: string;
   _userName?: string;
 }
+
+export interface PasswordProps {
+  oldPassword: string;
+  newPassword: string;
+}
+
+export interface PasswordResult {
+  success: boolean;
+  error: string;
+}

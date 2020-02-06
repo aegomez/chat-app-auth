@@ -24,10 +24,10 @@ connect()
 
 app.use(
   '/q',
-  graphqlHTTP((_request, response) => ({
+  graphqlHTTP((request, response) => ({
     schema: authSchema,
     graphiql: process.env.NODE_ENV === 'development',
-    context: { response }
+    context: { response, cookie: request.headers.cookie }
   }))
 );
 
